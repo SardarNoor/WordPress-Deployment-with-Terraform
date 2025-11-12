@@ -1,3 +1,4 @@
+
 # AWS EC2 WordPress Deployment with Terraform
 
 ## Overview
@@ -47,85 +48,115 @@ Install Terraform and AWS CLI, then run:
 aws configure
 terraform -version
 aws sts get-caller-identity
-Use region us-west-2.
+````
 
-2. Initialize Terraform
-bash
-Copy code
+Use region `us-west-2`.
+
+### 2. Initialize Terraform
+
+```bash
 terraform init
 terraform validate
-3. Apply Terraform
-bash
-Copy code
+```
+
+### 3. Apply Terraform
+
+```bash
 terraform apply -auto-approve
+```
+
 Terraform provisions:
 
-VPC, subnets, Internet Gateway, and NAT Gateway
+* VPC, subnets, Internet Gateway, and NAT Gateway
+* Security groups
+* Two EC2 instances (WordPress + MySQL)
 
-Security groups
+### 4. Retrieve Outputs
 
-Two EC2 instances (WordPress + MySQL)
-
-4. Retrieve Outputs
 After successful provisioning:
 
-ini
-Copy code
-wordpress_public_ip = <your-public-ip>
-mysql_private_ip = <your-private-ip>
+```
+wordpress_public_ip = <44.250.108.202>
+mysql_private_ip = <10.0.2.69>
+```
+
 Open WordPress in browser:
 
-cpp
-Copy code
-http://<wordpress_public_ip>
+```
+http://<44.250.108.202>
+```
+
 Complete the setup wizard and access the dashboard.
 
-Verifying Database Connectivity
-SSH into WordPress EC2:
+---
 
-bash
-Copy code
-ssh -i your-key.pem ec2-user@<wordpress-public-ip>
-Install MySQL client:
+## Verifying Database Connectivity
 
-bash
-Copy code
-sudo dnf install -y mariadb105
-Connect to MySQL using its private IP:
+1. SSH into WordPress EC2:
 
-bash
-Copy code
-mysql -h <mysql-private-ip> -u noor -p
-Password: onePlus1@
+   ```bash
+   ssh -i your-key.pem ec2-user@<44.250.108.202>
+   ```
+2. Install MySQL client:
 
-Verify:
+   ```bash
+   sudo dnf install -y mariadb105
+   ```
+3. Connect to MySQL using its private IP:
 
-bash
-Copy code
-show databases;
-Output includes:
+   ```bash
+   mysql -h <44.250.108.202> -u noor -p
+   ```
 
-nginx
-Copy code
-wordpress_db
-Problems and Solutions
-Problem	Cause	Solution
-source_security_group_id not supported	Terraform AWS provider v5+ changed rule syntax	Created a separate aws_security_group_rule resource
-Invalid value for vars map: DB_HOST	Wrong variable case in template	Changed ${DB_HOST} to ${db_host}
-InvalidAMIID.NotFound	Wrong AMI ID for selected region	Used correct Amazon Linux 2023 AMI ami-04f9aa2b7c7091927
-InvalidAccessKeyId	AWS CLI not configured	Ran aws configure with valid credentials
-MariaDB not starting	Wrong package for Amazon Linux	Used dnf install mariadb105-server
-Terraform provider mismatch	Lock file used AWS provider v6	Updated version to ~> 6.0 and reinitialized
+   Password: `onePlus1@`
+4. Verify:
 
-Final Output
-WordPress site running and accessible via public IP
+   ```bash
+   show databases;
+   ```
 
-MySQL database hosted securely in private subnet
+   Output includes:
 
-Connection verified between WordPress and MySQL
+   ```
+   wordpress_db
+   ```
 
-Terraform managing all resources automatically
+---
 
-Author
-Sardar Noor Ul Hassan
+## Problems and Solutions
+
+| Problem                                  | Cause                                          | Solution                                                   |
+| ---------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------- |
+| `source_security_group_id` not supported | Terraform AWS provider v5+ changed rule syntax | Created a separate `aws_security_group_rule` resource      |
+| `Invalid value for vars map: DB_HOST`    | Wrong variable case in template                | Changed `${DB_HOST}` to `${db_host}`                       |
+| `InvalidAMIID.NotFound`                  | Wrong AMI ID for selected region               | Used correct Amazon Linux 2023 AMI `ami-04f9aa2b7c7091927` |
+| `InvalidAccessKeyId`                     | AWS CLI not configured                         | Ran `aws configure` with valid credentials                 |
+| MariaDB not starting                     | Wrong package for Amazon Linux                 | Used `dnf install mariadb105-server`                       |
+| Terraform provider mismatch              | Lock file used AWS provider v6                 | Updated version to `~> 6.0` and reinitialized              |
+
+---
+
+## Final Output
+
+* WordPress site running and accessible via public IP
+* MySQL database hosted securely in private subnet
+* Connection verified between WordPress and MySQL
+* Terraform managing all resources automatically
+
+---
+
+## Author
+
+**Sardar Noor Ul Hassan**
 Cloud Intern – Cloudelligent
+
+---
+
+## Conclusion
+
+This project successfully automated a full WordPress deployment using Terraform on AWS.
+It showcases how Infrastructure as Code (IaC) can manage complex cloud environments efficiently.
+The setup follows best practices with VPC isolation, automation via user data, and reusable Terraform configuration.
+
+```
+```
